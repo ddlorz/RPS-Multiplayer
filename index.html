@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="us-en">
+<head>
+	<meta charset="utf-8">
+	<title>Rock Paper Scissors Multiplayer</title>
+	<link rel="stylesheet" type="text/css" href="assets/css/reset.css">
+  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+<style>
+</style>
+
+</head>
+<body>
+	<div>
+        <button id="rock1" class="selection" value="1">Rock</button>
+        <button id="paper" class="selection" value="2">Paper</button>
+        <button id="scissors" class="selection" value="3">Scissors</button>
+        <div id="result"></div>
+	</div>
+
+<script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+
+    //Initialize firebase
+    var config = {
+        apiKey: "AIzaSyB18Sawudo5XNochSLpHbuXnsTe58BYyOc",
+        authDomain: "rps-multiplayer-942bb.firebaseapp.com",
+        databaseURL: "https://rps-multiplayer-942bb.firebaseio.com",
+        projectId: "rps-multiplayer-942bb",
+        storageBucket: "rps-multiplayer-942bb.appspot.com",
+        messagingSenderId: "268631295473"
+    };
+
+    firebase.initializeApp(config);
+    database = firebase.database();
+    player1 = database.ref("player1");
+    player2 = database.ref("player2");
+    //End firebase initialization
+
+    //Game main object
+    //Contains global variables not available in database
+    var RPS = {
+        closedGame: false,
+        player1Online: false,
+        player1Play: '',    
+        player1Result: 'LOSS',    
+        player2Online: false,
+        player2Play: '',
+        player2Result: 'LOSS',
+        playerTag: '',
+        playerSelect: '',
+
+        playerActivate: function(player) {
+            player.update({active: true,
+                            ready: false});
+        },
+
+        playerDeactivate: function(player) {
+            player.child("active").onDisconnect().set(false);
+            player.child("ready").onDisconnect().set(false);
+        },
+
+        playerResultUpdate: function(player1R, player2R) {
+            player1.update({result: player1R});
+            player2.update({result: player2R});
+        },
+                    
+    }        
+
+    //Code to handle user login and logout
+    //Sets user ID to player1 or player2 depending on availability otherwise none
+    player1.once('value').then(function(snapshot) {       
+        var players1Active = snapshot.val().active;
+
+        if (players1Active) {
+            player2.once('value').then(function(snapshot) {        
+                var player2Active = snapshot.val().active;
+                if (player2Active) {
+                    RPS.player1Online = true;
+                    RPS.player2Online = true;
+                    RPS.closedGame = true;
+                    console.log("A Game is Ongoing");
+                }
+                else {
+                    RPS.playerTag = player2;
+                    console.log('Player 2');
+                    RPS.playerActivate(RPS.playerTag);
+                    player2Active = true;
+                    RPS.players2Online = true;
+                    RPS.playerDeactivate(RPS.playerTag);
+                }
+            });
+        }
+        else {
+            RPS.playerTag = player1;
+            console.log('Player 1');
+            RPS.playerActivate(RPS.playerTag);       
+            player1Active = true;
+            RPS.player1Online = true;         
+            RPS.playerDeactivate(RPS.playerTag);
+        }
+    });   
+
+    //Handles user RPS selection and toggles players readiness
+    $(".selection").on("click", function() {
+        RPS.playerSelect = $(this).val();
+        console.log(RPS.playerSelect);
+        RPS.playerTag.update({select: RPS.playerSelect,
+                              ready: true});
+
+        if (RPS.playerTag === player1) {
+            player2.once('value').then(function(snapshot) {  
+                if (snapshot.val().ready) {
+                    console.log("ready");    
+                    RPS.player1Play = RPS.playerSelect;
+                    RPS.player2Play = snapshot.val().select;
+                    gameOn(RPS.player1Play, RPS.player2Play);            
+                }
+            });
+        }
+        else if (RPS.playerTag === player2) {
+            player1.once('value').then(function(snapshot) {  
+                if (snapshot.val().ready) {
+                    console.log("ready");    
+                    RPS.player2Play = RPS.playerSelect;
+                    RPS.player1Play = snapshot.val().select;
+                    gameOn(RPS.player1Play, RPS.player2Play);              
+                }
+            });
+        }                            
+    });
+
+    //Process player1 and player2 select
+    //Assign win, loss, or draw on player database
+    function gameOn(player1G, player2G) {
+        console.log("game on");
+        if ((parseInt(player2G) % 3) + 1 === parseInt(player1G)) {RPS.player1Result = "WIN";}
+        else if ((parseInt(player1G) % 3) + 1 === parseInt(player2G)) {RPS.player2Result = "WIN";}
+        else {RPS.player2Result = "DRAW"; RPS.player2Result = "DRAW";}
+
+        RPS.playerResultUpdate(RPS.player1Result, RPS.player2Result)
+
+        if (RPS.playerTag === player1) {$("#result").text(RPS.player1Result);}
+        else if (RPS.playerTag === player2) {$("#result").text(RPS.player2Result);}
+    }
+
+</script>
+</body>
+</html>
