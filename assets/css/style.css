@@ -1,0 +1,76 @@
+@import url(http://fonts.googleapis.com/css?family=Lato);
+@import 'https://fonts.googleapis.com/css?family=Raleway';
+
+
+/* Main */
+body {
+  font-family: Lato;
+  background: #ffffff;
+  padding: 15px;
+  overflow-x:hidden;
+}
+
+.trigger {
+  font-size: 20px;
+  background: #F04903;
+  color: white;
+  width: 100px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+p{
+  padding: 15px;
+  font-size: 20px;
+  text-align: justify;
+}
+
+/* If you want to change header font, set it here */
+.iziModal .iziModal-header-title , .iziModal-header-subtitle {
+  font-family: raleway;
+  font-weight: 300;
+  text-align: center;
+  font-size: 25px;
+}
+
+.navbar {
+    width: 50%;
+    background-color: #B5CC18;
+    color: #FFFFFF;
+    font-size: 5rem;
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+}
+
+.selection {
+    margin: 23px;
+}
+
+.selection:hover {
+    opacity: 0.5;
+}
+
+#playerID {
+    margin-top: 5px;
+}
+
+#arena {
+    min-height: 350px;
+}
+
+#player1Arena {
+    float: left;
+    margin: 20px 0 0 200px;
+}
+
+#player2Arena {
+    float: right;
+    margin: 20px 200px 0 0;
+}
+
+#gameResult {
+    padding: 50px 0 50px 0;
+}
