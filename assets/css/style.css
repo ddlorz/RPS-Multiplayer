@@ -58,19 +58,30 @@ p{
 }
 
 #arena {
-    min-height: 350px;
+    min-height: 330px;
 }
 
 #player1Arena {
     float: left;
-    margin: 20px 0 0 200px;
+    margin: 10px 0 0 200px;
 }
 
 #player2Arena {
     float: right;
-    margin: 20px 200px 0 0;
+    margin: 10px 200px 0 0;
 }
 
 #gameResult {
-    padding: 50px 0 50px 0;
+    padding: 20px 0 20px 0;
+}
+
+#footer {
+    position: relative;
+    left: 5%;
+    top: 20px;    
+    display: block;
+    width: 40%;
+    height: 120px;
+    background-color: #475;
+    overflow: scroll;
 }

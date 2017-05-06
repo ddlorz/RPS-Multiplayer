@@ -73,26 +73,37 @@
             }
             
             if (player === player1) {
-                $("#player1Arena").attr('src', badge);
+                $("#player1Arena").addClass('hide');
+                $("#player1Arena").attr('src', badge); 
+                $("#player1Arena").addClass('bounceInLeft');  
+                $("#player1Arena").removeClass('hide');             
             }
             else if (player === player2) {
+                $("#player2Arena").addClass('hide');
                 $("#player2Arena").attr('src', badge);
+                $("#player2Arena").addClass('bounceInRight');  
+                $("#player2Arena").removeClass('hide');  
             }
         },
 
         newGame: function() {
             $("#player1Arena").attr('src', 'assets/images/player1.jpg');
+            $("#player1Arena").removeClass('bounceInLeft');
             $("#player2Arena").attr('src', 'assets/images/player2.jpg');
+            $("#player2Arena").removeClass('bounceInRight');
             $("#playButton").prop("disabled", false);
-            $("#readyButtonButton").prop("disabled", true);
+            $("#readyButton").prop("disabled", true);
             $("#readyButton").css("opacity", "1.0");
+
         },
 
         gameReset: function() {
             result.update({finish: false});
             player1.update({select: '0',
+                            ready: false,
                             result: "LOSS"});
             player2.update({select: '-1',
+                            ready: false,
                             result: "LOSS"});     
         }, 
                     
@@ -195,23 +206,31 @@
         result.child('finish').on('value', function(snapshot) {   
             console.log(snapshot.val());
             if (snapshot.val()) {
-                RPS.opponentTag.child('select').once('value', function(childsnapshot) {
-                        RPS.arenaDisplay(childsnapshot.val(), RPS.opponentTag);
-                });
                 RPS.playerTag.child('result').once('value', function(childsnapshot) {
-                        console.log(childsnapshot.val());
-                        console.log(RPS.player1Result + " " + RPS.player2Result);
-                        $('#gameResultText').text(childsnapshot.val());                        
-                        $('#gameResult').iziModal('open');  
+                    console.log(childsnapshot.val());
+                    $('#gameResultText').text(childsnapshot.val());  
 
-                        if (RPS.playerTag === player1) {
+                    setTimeout(function() {
+                    $('#gameResult').iziModal('open');  
+                    }, 500);
+
+                    RPS.opponentTag.child('select').once('value', function(childchildsnapshot) {
+                        RPS.arenaDisplay(childchildsnapshot.val(), RPS.opponentTag);
+                        /*if (RPS.playerTag === player1) {
+                            player1.update({select: '0',
+                                            ready: false,
+                                            result: "LOSS"});
                             RPS.initialBadge = '0';
                         }
                         else if (RPS.playerTag === player2) {
+                            player2.update({select: '-1',
+                                            ready: false,
+                                            result: "LOSS"});
                             RPS.initialBadge = '-1';
-                        }                     
+                        }*/
+                    });                                            
                 });                              
-            }   
+            }  
         });                        
     });
 
@@ -223,7 +242,7 @@
         else if ((parseInt(player1G) % 3) + 1 === parseInt(player2G)) {RPS.player2Result = "WIN";}
         else {RPS.player1Result = "DRAW"; RPS.player2Result = "DRAW";}
 
-        console.log(RPS.player1Result + " " + RPS.player2Result);
+        //console.log(RPS.player1Result + " " + RPS.player2Result);
         RPS.playerResultUpdate(RPS.player1Result, RPS.player2Result);
 
         result.update({finish: true});     
@@ -231,7 +250,8 @@
 
     //Play again function and restart game
     $(document).on("click", "#playAgain", function(event) {
-        result.update({finish: false});
+        //result.update({finish: false});
+        RPS.gameReset();
         $("#gameResult").iziModal('close');
         RPS.playerActivate(RPS.playerTag, RPS.initialBadge);
         RPS.newGame();
@@ -253,7 +273,7 @@
 
     $("#gameResult").iziModal({
         overlayClose: false,
-        width: 600,
+        width: 250,
         autoOpen: false,
         overlayColor: 'rgba(0, 0, 0, 0.6)',
     });

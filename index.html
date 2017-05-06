@@ -13,18 +13,18 @@
 <body>
     <div class="container"> 
         <center><nav class="navbar navbar-default text-center">
-            <div class="container-fluid">
-                <h1 id="playerID">Hello</h1>
+            <div class="container-fluid animated bounceInDown">
+                <h1 id="playerID"></h1>
             </div>
         </nav></center>
 
         <div id="arena">
-            <img id="player1Arena" class="ui medium circular image" style="display: inline-block" src="assets/images/player1.jpg" alt="player1">
-            <img id="player2Arena" class="ui medium circular image" style="display: inline-block" src="assets/images/player2.jpg" alt="player2">
+            <img id="player1Arena" class="ui medium circular image animated bounceIn" style="display: inline-block" src="assets/images/player1.jpg" alt="player1">
+            <img id="player2Arena" class="ui medium circular image animated bounceIn" style="display: inline-block" src="assets/images/player2.jpg" alt="player2">
         </div>
 
         <center><button class="ui olive button animate fadeInDown" id="playButton">Select Hand</button>
-        <button class="ui olive button animate fadeInDown" id="readyButton" disabled>Ready Button</button><center>
+        <button class="ui olive button animate fadeInDown" id="readyButton" disabled>Ready Signal</button><center>
 
         <div id="gameResult">
             <h1 id="gameResultText" class="text-center"></h1>
@@ -38,6 +38,9 @@
             <img id="scissors" class="selection ui small circular image" style="display: inline-block;" value="3" src='assets/images/scissors.jpg' alt='scissors'>
         </div>
 
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3" id="footer"></div>
+        </div>
         
     </div>
 
