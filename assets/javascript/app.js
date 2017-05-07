@@ -15,30 +15,37 @@
     player1 = database.ref("player1");
     player2 = database.ref("player2");
     result = database.ref("result");
+    chat = database.ref("chat");
     //End firebase initialization
 
     //Game main object
     //Contains global variables not available in database
     var RPS = {
+        playerName: '',
         closedGame: false,
         player1Online: false,
         player1Play: '',    
         player1Result: 'LOSS', 
         player1Ready: false,   
+        player1Score: 0,
         player2Online: false,
         player2Play: '',
         player2Result: 'LOSS',
         player2Ready: false,
+        player2Score: 0,
         playerTag: '',
         playerSelect: '',
         arenaBadge: '',
         initialBadge: '',
         opponentTag: '',
+        chatOnline: false,
+        newGameBool: false,
 
-        playerActivate: function(player, initialBadge) {
+        playerActivate: function(player, initialBadge, name) {
             player.update({active: true,
                             ready: false,
                             select: initialBadge,
+                            name: name,
                             result: "LOSS"});
         },
 
@@ -94,6 +101,10 @@
             $("#playButton").prop("disabled", false);
             $("#readyButton").prop("disabled", true);
             $("#readyButton").css("opacity", "1.0");
+            $("#readyButton").text("Ready Signal");
+            $('#playAgain').css('opacity', '1.0');
+            $('#playAgain').text('Play Again?');  
+            RPS.newGameBool = false;
 
         },
 
@@ -101,13 +112,41 @@
             result.update({finish: false});
             player1.update({select: '0',
                             ready: false,
+                            newgame: false,
                             result: "LOSS"});
             player2.update({select: '-1',
                             ready: false,
+                            newgame: false,
                             result: "LOSS"});     
         }, 
-                    
-    }        
+
+        displayScores: function() {
+            console.log('display scores');
+            player1.child('name').once('value', function(snapshot) {
+                var player1name = snapshot.val();
+
+                player2.child('name').once('value', function(snapshot) {
+                    var player2name = snapshot.val();
+                    var scoreOutput = "<strong>" + player1name + "</strong> : " + RPS.player1Score + " ---- " + RPS.player2Score + " : <strong>" + player2name + "</strong>";
+                    chat.set({currentchat: scoreOutput}); 
+                });
+            });
+            
+        },
+
+        opponentConnect: function(opponent) {
+            RPS.opponentTag.child('active').on('value', function(snapshot) {
+                if (!snapshot.val()) {
+                    var DCtext = opponent + " has disconnected."
+                    $("#chat").append(DCtext + "<br>");  
+                }
+                else if (snapshot.val()) {
+                    var DCtext = opponent + " has connected."
+                    $("#chat").append(DCtext + "<br>"); 
+                }
+            });
+        },                    
+    };        
 
     //Code to handle user login and logout
     //Sets user ID to player1 or player2 depending on availability otherwise none
@@ -124,17 +163,21 @@
                     console.log("A Game is Ongoing");
                     $("#playerID").text("Game is Ongoing. Please try again later.")
                 }
-                else {       
-                    RPS.gameReset();             
+                else {                    
+                    player2.update({score: 0,
+                                    newgame: true});
+                    //RPS.gameReset();             
                     RPS.playerTag = player2;
                     RPS.opponentTag = player1;
                     console.log('Player 2');
-                    $("#playerID").text("Player 2")
+                    RPS.playerName = 'Player 2';
+                    $("#playerID").text(RPS.playerName);
                     RPS.initialBadge = '-1';
-                    RPS.playerActivate(RPS.playerTag, RPS.initialBadge);
+                    RPS.playerActivate(RPS.playerTag, RPS.initialBadge, RPS.playerName);
                     player2Active = true;
                     RPS.players2Online = true;
                     RPS.playerDeactivate(RPS.playerTag);
+                    RPS.opponentConnect('Player 1');
 
                     /*player1.child('ready').on('value', function(snapshot) {
                         player1.child('select').once('value', function(childsnapshot) {
@@ -147,16 +190,20 @@
             });
         }
         else {
-            RPS.gameReset();
+            player1.update({score: 0,
+                            newgame: true});
+            //RPS.gameReset();
             RPS.playerTag = player1;
             RPS.opponentTag = player2;            
             console.log('Player 1');
-            $("#playerID").text("Player 1")
+            RPS.playerName = 'Player 1';
+            $("#playerID").text(RPS.playerName)
             RPS.initialBadge = '0';
-            RPS.playerActivate(RPS.playerTag, RPS.initialBadge);       
+            RPS.playerActivate(RPS.playerTag, RPS.initialBadge, RPS.playerName);       
             player1Active = true;
             RPS.player1Online = true;         
             RPS.playerDeactivate(RPS.playerTag);
+            RPS.opponentConnect('Player 2');
 
             /*player2.child('ready').on('value', function(snapshot) {
                 player2.child('select').once('value', function(childsnapshot) {
@@ -179,13 +226,15 @@
         RPS.arenaDisplay(RPS.playerSelect, RPS.playerTag);
    });
    
+   //Handles user readiness. Extract opponents readiness and execute game as soon both are ready.
     $(document).on("click", "#readyButton", function() {    
         RPS.playerTag.update({ready: true});
         $("#readyButton").css("opacity", "0.5");
+        $("#readyButton").text("Wating...");
         if (RPS.playerTag === player1) {
             player2.once('value').then(function(snapshot) {  
                 if (snapshot.val().ready) {
-                    console.log("ready");    
+                    //console.log("ready");    
                     RPS.player1Play = RPS.playerSelect;
                     RPS.player2Play = snapshot.val().select;
                     gameOn(RPS.player1Play, RPS.player2Play);            
@@ -195,7 +244,7 @@
         else if (RPS.playerTag === player2) {
             player1.once('value').then(function(snapshot) {  
                 if (snapshot.val().ready) {
-                    console.log("ready");    
+                    //console.log("ready");    
                     RPS.player2Play = RPS.playerSelect;
                     RPS.player1Play = snapshot.val().select;
                     gameOn(RPS.player1Play, RPS.player2Play);              
@@ -204,11 +253,11 @@
         }    
 
         result.child('finish').on('value', function(snapshot) {   
-            console.log(snapshot.val());
+            //console.log(snapshot.val());
             if (snapshot.val()) {
                 RPS.playerTag.child('result').once('value', function(childsnapshot) {
-                    console.log(childsnapshot.val());
-                    $('#gameResultText').text(childsnapshot.val());  
+                    //console.log(childsnapshot.val());
+                    $('#gameResultText').text(childsnapshot.val()); 
 
                     setTimeout(function() {
                     $('#gameResult').iziModal('open');  
@@ -216,18 +265,6 @@
 
                     RPS.opponentTag.child('select').once('value', function(childchildsnapshot) {
                         RPS.arenaDisplay(childchildsnapshot.val(), RPS.opponentTag);
-                        /*if (RPS.playerTag === player1) {
-                            player1.update({select: '0',
-                                            ready: false,
-                                            result: "LOSS"});
-                            RPS.initialBadge = '0';
-                        }
-                        else if (RPS.playerTag === player2) {
-                            player2.update({select: '-1',
-                                            ready: false,
-                                            result: "LOSS"});
-                            RPS.initialBadge = '-1';
-                        }*/
                     });                                            
                 });                              
             }  
@@ -237,9 +274,23 @@
     //Process player1 and player2 select
     //Assign win, loss, or draw on player database
     function gameOn(player1G, player2G) {
-        console.log(player1G + " " + player2G);
-        if ((parseInt(player2G) % 3) + 1 === parseInt(player1G)) {RPS.player1Result = "WIN";}
-        else if ((parseInt(player1G) % 3) + 1 === parseInt(player2G)) {RPS.player2Result = "WIN";}
+        //console.log(player1G + " " + player2G);
+        if ((parseInt(player2G) % 3) + 1 === parseInt(player1G)) {
+            RPS.player1Result = "WIN";
+            player1.child('score').once('value', function(snapshot) {
+                RPS.player1Score = snapshot.val() + 1;
+                player1.update({score: RPS.player1Score});
+                RPS.displayScores();
+            });
+        }
+        else if ((parseInt(player1G) % 3) + 1 === parseInt(player2G)) {
+            RPS.player2Result = "WIN";
+            player2.child('score').once('value', function(snapshot) {
+                RPS.player2Score = snapshot.val() + 1;
+                player2.update({score: RPS.player2Score});
+                RPS.displayScores();
+            });
+        }
         else {RPS.player1Result = "DRAW"; RPS.player2Result = "DRAW";}
 
         //console.log(RPS.player1Result + " " + RPS.player2Result);
@@ -250,17 +301,69 @@
 
     //Play again function and restart game
     $(document).on("click", "#playAgain", function(event) {
-        //result.update({finish: false});
-        RPS.gameReset();
-        $("#gameResult").iziModal('close');
-        RPS.playerActivate(RPS.playerTag, RPS.initialBadge);
-        RPS.newGame();
+        $('#playAgain').css('opacity', '0.5');   
+        $('#playAgain').text('Waiting...');     
+        //$('#playAgain').text('Waiting on ' + RPS.oppoent)
+        RPS.newGameBool = true;
+        RPS.playerTag.update({newgame: RPS.newGameBool});
+
+        RPS.opponentTag.child("newgame").on('value', function(snapshot) {
+            if (snapshot.val() && RPS.newGameBool) {
+                RPS.gameReset();
+                $("#gameResult").iziModal('close');
+                RPS.playerActivate(RPS.playerTag, RPS.initialBadge, RPS.playerName);
+                RPS.newGame();
+            }
+        });
+        
     });
+
+    $(document).on("click", "#submitNameChange", function(event){
+        event.preventDefault();
+        RPS.playerName = $("#nameInput").val();
+        //console.log(RPS.playerName);
+        if (RPS.playerName !== '') {
+            $('#changeName').iziModal('close');
+            $("#playerName").addClass('bounceInDown');
+            $("#playerID").text(RPS.playerName);
+            RPS.playerTag.update({name: RPS.playerName});
+        }
+    });
+
+    //Handles player chat. When submitChat is clicked, input is stored in firebase
+    $(document).on("click", "#submitChat", function(event) {
+        event.preventDefault();        
+        var userChatInput = RPS.playerName + " : " + $("#userChatInput").val();
+        $("#userChatInput").val('');
+        chat.set({currentchat: userChatInput});        
+    });
+
+    //Handles chat output. Listens to input change in firebase then posts it.
+    chat.child("currentchat").on("value", function(snapshot) {
+        if (RPS.chatOnline) {
+            //console.log(snapshot.val());
+            if (RPS.playerTag === player1) {
+                var playerColor = 'blue';
+            }
+            else if (RPS.playerTag === player2) {
+                var playerColor = 'red'
+            }
+            $("#chat").append(snapshot.val() + "<br>");
+        }
+        RPS.chatOnline = true;
+    });    
 
     //Modal functions
     $(document).on('click', '#playButton', function (event) {
         event.preventDefault();
+        player1.update({newgame: false});
         $('#handSelection').iziModal('open');
+    });
+
+    $(document).on('click', '#changeNameButton', function (event) {
+        event.preventDefault();
+        $("#playerName").removeClass('bounceInDown');
+        $('#changeName').iziModal('open');
     });
 
     $("#handSelection").iziModal({
@@ -274,6 +377,14 @@
     $("#gameResult").iziModal({
         overlayClose: false,
         width: 250,
+        autoOpen: false,
+        overlayColor: 'rgba(0, 0, 0, 0.6)',
+    });
+
+    $("#changeName").iziModal({
+        title: 'Change Name',
+        overlayClose: false,
+        width: 300,
         autoOpen: false,
         overlayColor: 'rgba(0, 0, 0, 0.6)',
     });

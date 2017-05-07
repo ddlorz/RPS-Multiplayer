@@ -13,7 +13,7 @@
 <body>
     <div class="container"> 
         <center><nav class="navbar navbar-default text-center">
-            <div class="container-fluid animated bounceInDown">
+            <div class="container-fluid animated bounceInDown" id="playerName"> 
                 <h1 id="playerID"></h1>
             </div>
         </nav></center>
@@ -24,7 +24,8 @@
         </div>
 
         <center><button class="ui olive button animate fadeInDown" id="playButton">Select Hand</button>
-        <button class="ui olive button animate fadeInDown" id="readyButton" disabled>Ready Signal</button><center>
+        <button class="ui olive button animate fadeInDown" id="readyButton" disabled>Ready Signal</button>
+        <button class="ui olive button animate fadeInDown" id="changeNameButton">Change Name</button><center>
 
         <div id="gameResult">
             <h1 id="gameResultText" class="text-center"></h1>
@@ -38,8 +39,33 @@
             <img id="scissors" class="selection ui small circular image" style="display: inline-block;" value="3" src='assets/images/scissors.jpg' alt='scissors'>
         </div>
 
+        <div id="changeName">
+             <div class="input-group">
+                <input type="text" class="form-control" placeholder="" id="nameInput"> 
+                <span class="input-group-btn">
+                    <button class="btn" type="button" id="submitNameChange">Change</button>
+                </span>
+            </div>
+        </div>
+
         <div class="row">
-            <div class="col-md-6 col-md-offset-3" id="footer"></div>
+            
+            <div class="col-md-6 col-md-offset-3" id="footer">
+                <div id="chat" style="text-align: left;">
+                </div>                                
+            </div>
+
+            <div class="col-md-6 col-md-offset-3" id="inputBox" style="padding: 0">                
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Chat" id="userChatInput" style="height: 20px;"> 
+                    <span class="input-group-btn">
+                        <button class="btn" type="button" id="submitChat" style="height: 20px; padding: 0 5px 0 5px;">Send</button>
+                    </span>
+                </div>
+            </div>
+
+            
+            
         </div>
         
     </div>

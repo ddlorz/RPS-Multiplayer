@@ -77,11 +77,29 @@ p{
 
 #footer {
     position: relative;
-    left: 5%;
+    left: 0;
     top: 20px;    
     display: block;
-    width: 40%;
-    height: 120px;
+    width: 555px;
+    height: 160px;
     background-color: #475;
     overflow: scroll;
 }
+
+#chat {
+    min-height: 95%;
+    color: #ffffff;
+}
+
+#inputBox {
+    width: 555px;
+}
+
+.red {    
+    color: #ffb3b3;    
+}
+
+.blue {
+    color: #ccccff;
+}
+
