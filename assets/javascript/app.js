@@ -161,6 +161,8 @@
                     RPS.player2Online = true;
                     RPS.closedGame = true;
                     console.log("A Game is Ongoing");
+                    $("#playButton").prop("disabled", true);
+                    $("#changeNameButton").prop("disabled", true);
                     $("#playerID").text("Game is Ongoing. Please try again later.")
                 }
                 else {                    
